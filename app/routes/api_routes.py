@@ -1,12 +1,15 @@
 import uuid
 
-from fastapi import APIRouter, Depends, Form, Query, Request
+from fastapi import APIRouter, Depends, Form, HTTPException, Query, Request
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.deps import get_db
 from app.escalation import ESCALATION_MAP, FALLBACK_ESCALATION
+from app.models import Company
 from app.schemas import (
     CategoryEmbed,
+    CompanyEmbed,
     DomainEmbed,
     EscalationLink,
     EvidenceOut,
@@ -29,6 +32,7 @@ async def _build_problem_list(problems, db: AsyncSession) -> list[ProblemListIte
             slug=p.slug,
             domain=DomainEmbed.model_validate(p.domain),
             category=CategoryEmbed.model_validate(p.category) if p.category else None,
+            company=CompanyEmbed.model_validate(p.company) if p.company else None,
             is_resolved=p.is_resolved,
             is_verified=p.is_verified,
             flags_cleared=p.flags_cleared,
@@ -74,7 +78,6 @@ async def get_problem(
 ):
     problem = await problem_service.get_problem(db, problem_id)
     if problem is None:
-        from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Problem not found")
 
     # Read forwarded IP + UA from Next.js server component headers
@@ -102,6 +105,7 @@ async def get_problem(
         slug=problem.slug,
         domain=DomainEmbed.model_validate(problem.domain),
         category=CategoryEmbed.model_validate(problem.category) if problem.category else None,
+        company=CompanyEmbed.model_validate(problem.company) if problem.company else None,
         description=problem.description,
         is_resolved=problem.is_resolved,
         is_verified=problem.is_verified,
@@ -148,7 +152,7 @@ async def report_problem_api(
     )
     ua = request.headers.get("User-Agent", "")
     fingerprint = compute_fingerprint(ip, ua)
-    count, is_new = await report_problem(db, problem_id, fingerprint, reason)
+    count, _ = await report_problem(db, problem_id, fingerprint, reason)
     return {"report_count": count, "already_reported": True}
 
 
@@ -162,3 +166,23 @@ async def search_problems(
         return []
     problems = await problem_service.search_problems(db, q.strip(), page=page)
     return await _build_problem_list(problems, db)
+
+
+@router.get("/companies", response_model=list[CompanyEmbed])
+async def search_companies(
+    q: str = "",
+    domain_id: str = "",
+    db: AsyncSession = Depends(get_db),
+):
+    stmt = select(Company).order_by(Company.name)
+    if domain_id.strip():
+        try:
+            did = uuid.UUID(domain_id.strip())
+            stmt = stmt.where(Company.domain_id == did)
+        except ValueError:
+            pass
+    if q.strip():
+        stmt = stmt.where(Company.name.ilike(f"%{q.strip()}%"))
+    stmt = stmt.limit(50)
+    result = await db.execute(stmt)
+    return [CompanyEmbed.model_validate(c) for c in result.scalars().all()]

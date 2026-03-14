@@ -9,7 +9,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import settings
 from app.deps import get_db
 from app.models import Problem
-from app.services.problem_service import get_all_problems_admin, get_report_counts
+from app.services.problem_service import (
+    delete_problem,
+    get_all_problems_admin,
+    get_report_counts,
+)
 
 router = APIRouter(prefix="/admin")
 templates = Jinja2Templates(directory="app/templates")
@@ -117,5 +121,20 @@ async def admin_clear_flags(
         update(Problem).where(Problem.id == problem_id).values(flags_cleared=True)
     )
     await db.commit()
+    key = request.query_params.get("key")
+    return RedirectResponse(f"/admin?key={key}", status_code=303)
+
+
+@router.post("/problems/{problem_id}/delete")
+async def admin_delete(
+    request: Request,
+    problem_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+):
+    _check_admin(request)
+    deleted = await delete_problem(db, problem_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Problem not found")
+        
     key = request.query_params.get("key")
     return RedirectResponse(f"/admin?key={key}", status_code=303)

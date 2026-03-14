@@ -6,3 +6,11 @@ __pycache__/
 sitemap.xml
 *.egg-info/
 dist/
+
+# Debug & Temporary files
+test_submit.py
+*.log
+.idea/
+.vscode/
+*.sqlite3
+

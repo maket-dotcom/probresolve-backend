@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     supabase_url: str
     supabase_key: str  # anon key (used for public reads)
     supabase_service_key: str  # service role key (used for server-side storage writes)
-    supabase_bucket: str = "awaaz-uploads"
+    supabase_bucket: str
     admin_key: str
     allowed_origins: list[str] = ["http://localhost:3000"]
     frontend_url: str = "http://localhost:3000"

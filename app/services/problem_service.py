@@ -7,6 +7,7 @@ from sqlalchemy.orm import selectinload
 
 from app.models import Problem, Report
 from app.schemas import ProblemCreate
+from app.services.upload_service import delete_problem_files
 
 PAGE_SIZE = 20
 
@@ -17,10 +18,11 @@ async def create_problem(db: AsyncSession, data: ProblemCreate) -> Problem:
     problem = Problem(
         domain_id=data.domain_id,
         category_id=data.category_id,
+        company_id=data.company_id,
         title=data.title,
         slug=slug,
         description=data.description,
-        amount_lost=data.amount_lost,
+        amount_lost=data.amount_lost,  # exact Rupees — no paise conversion
         poster_name=data.poster_name,
         poster_email=data.poster_email,
         poster_phone=data.poster_phone,
@@ -41,6 +43,7 @@ async def get_problem(db: AsyncSession, problem_id: uuid.UUID) -> Problem | None
             selectinload(Problem.evidence),
             selectinload(Problem.domain),
             selectinload(Problem.category),
+            selectinload(Problem.company),
         )
         .where(Problem.id == problem_id, Problem.is_hidden == False)  # noqa: E712
     )
@@ -55,7 +58,7 @@ async def list_problems(
     offset = (page - 1) * PAGE_SIZE
     stmt = (
         select(Problem)
-        .options(selectinload(Problem.domain), selectinload(Problem.category))
+        .options(selectinload(Problem.domain), selectinload(Problem.category), selectinload(Problem.company))
         .order_by(Problem.created_at.desc())
         .offset(offset)
         .limit(PAGE_SIZE)
@@ -76,7 +79,7 @@ async def search_problems(
     pattern = f"%{query}%"
     stmt = (
         select(Problem)
-        .options(selectinload(Problem.domain), selectinload(Problem.category))
+        .options(selectinload(Problem.domain), selectinload(Problem.category), selectinload(Problem.company))
         .where(
             Problem.is_hidden == False,  # noqa: E712
             Problem.title.ilike(pattern) | Problem.description.ilike(pattern),
@@ -110,6 +113,7 @@ async def get_all_problems_admin(db: AsyncSession, q: str | None = None) -> list
         .options(
             selectinload(Problem.domain),
             selectinload(Problem.category),
+            selectinload(Problem.company),
             selectinload(Problem.evidence),
         )
         .order_by(Problem.created_at.desc())
@@ -123,3 +127,25 @@ async def get_all_problems_admin(db: AsyncSession, q: str | None = None) -> list
         )
     result = await db.execute(stmt)
     return list(result.scalars().all())
+
+
+async def delete_problem(db: AsyncSession, problem_id: uuid.UUID) -> bool:
+    """Hard delete a problem and all its associated Supabase files.
+
+    Deletes Supabase storage files first, then removes the DB record.
+    CASCADE on Evidence, Upvote, and Report means dependent rows are
+    deleted automatically by the database.
+    """
+    # Fetch the problem regardless of is_hidden state
+    result = await db.execute(select(Problem).where(Problem.id == problem_id))
+    problem = result.scalar_one_or_none()
+    if not problem:
+        return False
+
+    # 1. Delete uploaded evidence files from Supabase Storage
+    await delete_problem_files(problem_id)
+
+    # 2. Delete the DB record (related rows cascade automatically)
+    await db.delete(problem)
+    await db.commit()
+    return True

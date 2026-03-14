@@ -1,29 +1,7 @@
 import uuid
-from datetime import date, datetime
+from datetime import date, datetime, timezone, timedelta
 
 from pydantic import BaseModel, ConfigDict, EmailStr, field_validator
-
-# ── Domain ────────────────────────────────────────────────────────────────────
-
-class DomainOut(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    id: uuid.UUID
-    name: str
-    slug: str
-    icon: str
-    description: str | None
-
-
-# ── Category ──────────────────────────────────────────────────────────────────
-
-class CategoryOut(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    id: uuid.UUID
-    domain_id: uuid.UUID
-    name: str
-    slug: str
 
 
 # ── Evidence ──────────────────────────────────────────────────────────────────
@@ -42,9 +20,10 @@ class EvidenceOut(BaseModel):
 class ProblemCreate(BaseModel):
     domain_id: uuid.UUID
     category_id: uuid.UUID | None = None
+    company_id: uuid.UUID | None = None
     title: str
     description: str
-    amount_lost: int | None = None  # in rupees (₹)
+    amount_lost: int | None = None  # exact Rupees (no paise conversion)
     poster_name: str
     poster_email: EmailStr
     poster_phone: str
@@ -96,6 +75,17 @@ class ProblemCreate(BaseModel):
             raise ValueError("Mobile number must start with 6, 7, 8, or 9")
         return v  # stored as 10 digits
 
+    @field_validator("date_of_incident")
+    @classmethod
+    def no_future_date(cls, v: date | None) -> date | None:
+        if v is None:
+            return v
+        # Today's date in IST (UTC+5:30)
+        today_ist = (datetime.now(timezone.utc) + timedelta(hours=5, minutes=30)).date()
+        if v > today_ist:
+            raise ValueError("Date of incident cannot be in the future")
+        return v
+
 
 # ── JSON API schemas (Next.js frontend) ───────────────────────────────────────
 
@@ -116,6 +106,13 @@ class CategoryEmbed(BaseModel):
     slug: str
 
 
+class CompanyEmbed(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    name: str
+
+
 class EscalationLink(BaseModel):
     name: str
     url: str
@@ -132,12 +129,13 @@ class ProblemListItemV2(BaseModel):
     slug: str
     domain: DomainEmbed
     category: CategoryEmbed | None
+    company: CompanyEmbed | None
     is_resolved: bool
     is_verified: bool
     flags_cleared: bool
     upvote_count: int
     report_count: int  # computed, not a DB column
-    amount_lost: int | None  # in rupees (₹)
+    amount_lost: int | None  # exact Rupees — display as-is with Indian formatting
     poster_name: str | None
     location_state: str | None
     date_of_incident: date | None
@@ -154,6 +152,7 @@ class ProblemDetailResponse(BaseModel):
     slug: str
     domain: DomainEmbed
     category: CategoryEmbed | None
+    company: CompanyEmbed | None
     description: str
     is_resolved: bool
     is_verified: bool

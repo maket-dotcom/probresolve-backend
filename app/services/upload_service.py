@@ -137,3 +137,28 @@ async def upload_file(problem_id: UUID, data: bytes, filename: str, content_type
     """
     path = f"{problem_id}/{filename}"
     return await asyncio.to_thread(_sync_upload, path, data, content_type)
+
+
+def _sync_delete_folder(problem_id: UUID) -> None:
+    """Synchronous deletion of all files in a problem's Supabase folder.
+
+    Supabase Storage organises files as: {problem_id}/{filename}
+    bucket.list(folder) lists all objects directly inside that folder.
+    We then call bucket.remove([...paths...]) to delete them.
+    """
+    bucket = _client.storage.from_(settings.supabase_bucket)
+    folder = str(problem_id)
+    try:
+        files = bucket.list(folder)
+    except Exception:
+        # Folder doesn't exist or already empty — nothing to delete
+        return
+    if files:
+        paths = [f"{folder}/{f['name']}" for f in files if f.get("name")]
+        if paths:
+            bucket.remove(paths)
+
+
+async def delete_problem_files(problem_id: UUID) -> None:
+    """Delete all files associated with a problem from Supabase Storage."""
+    await asyncio.to_thread(_sync_delete_folder, problem_id)
