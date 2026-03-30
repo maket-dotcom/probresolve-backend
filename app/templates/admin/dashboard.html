@@ -88,7 +88,17 @@
 
           <td class="px-4 py-3 text-center">
             {% if problem.evidence %}
-            <span class="text-green-600 font-bold">✓ {{ problem.evidence|length }}</span>
+            <details class="inline-block text-left">
+              <summary class="text-green-600 font-bold cursor-pointer">✓ {{ problem.evidence|length }}</summary>
+              <ul class="mt-1 space-y-0.5 text-xs">
+                {% for ev in problem.evidence %}
+                <li>
+                  <a href="{{ ev.file_url }}" target="_blank" rel="noopener noreferrer"
+                     class="text-blue-600 hover:underline">📎 {{ ev.file_name }}</a>
+                </li>
+                {% endfor %}
+              </ul>
+            </details>
             {% else %}
             <span class="text-gray-300">✗</span>
             {% endif %}

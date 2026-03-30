@@ -18,3 +18,4 @@ settings = Settings()
 
 MAX_FILES = 5
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
+MAX_TOTAL_FILE_SIZE = 40 * 1024 * 1024  # 40 MB total (headroom for 52 MB body limit)

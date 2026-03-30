@@ -2,13 +2,14 @@ import re
 import uuid as _uuid
 from datetime import date
 
-from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 from sqlalchemy import insert, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.datastructures import UploadFile
 
-from app.config import MAX_FILE_SIZE, MAX_FILES
+from app.config import MAX_FILE_SIZE, MAX_FILES, MAX_TOTAL_FILE_SIZE
 from app.deps import get_db
 from app.limiter import limiter
 from app.models import Evidence, Company
@@ -36,10 +37,15 @@ def parse_amount_lost(raw: str | None) -> int | None:
 @limiter.limit("10/minute")
 async def create_problem(
     request: Request,
-    files: list[UploadFile] = File(default=[]),
     db: AsyncSession = Depends(get_db),
 ):
     form = await request.form()
+
+    # Extract files from the form (single source of truth — no double-read)
+    files = [
+        v for k, v in form.multi_items()
+        if k == "files" and isinstance(v, UploadFile) and v.filename and v.filename != "blob"
+    ][:MAX_FILES]
 
     # Parse amount — prefer amount_lost_raw (pure digits from hidden input), fall back to amount_lost
     amount_raw = form.get("amount_lost_raw") or form.get("amount_lost", "")
@@ -88,12 +94,19 @@ async def create_problem(
     problem = await problem_service.create_problem(db, data)
 
     # Upload evidence files
-    # Filter: non-empty, non-blob, within file count limit
-    candidates = [f for f in files if f.filename and f.filename != "blob"][:MAX_FILES]
-    for upload in candidates:
+    uploaded = 0
+    skipped = 0
+    total_bytes = 0
+
+    for upload in files:
         content = await upload.read()
         # Skip empty or oversized
         if not content or len(content) > MAX_FILE_SIZE:
+            skipped += 1
+            continue
+        # Check total size limit
+        if total_bytes + len(content) > MAX_TOTAL_FILE_SIZE:
+            skipped += 1
             continue
         # Skip invalid file types (extension + MIME + magic bytes must all agree)
         if not upload_service.is_valid_file(
@@ -101,8 +114,9 @@ async def create_problem(
             upload.filename or "",
             upload.content_type or "",
         ):
+            skipped += 1
             continue
-        # Upload to Supabase; skip silently on storage error
+        # Upload to Supabase
         try:
             file_url = await upload_service.upload_file(
                 problem.id,
@@ -111,6 +125,7 @@ async def create_problem(
                 upload.content_type or "application/octet-stream",
             )
         except Exception:
+            skipped += 1
             continue
         await db.execute(
             insert(Evidence).values(
@@ -120,6 +135,12 @@ async def create_problem(
                 content_type=upload.content_type,
             )
         )
+        total_bytes += len(content)
+        uploaded += 1
+
     await db.commit()
 
-    return JSONResponse({"id": str(problem.id), "slug": problem.slug}, status_code=201)
+    return JSONResponse(
+        {"id": str(problem.id), "slug": problem.slug, "uploaded": uploaded, "skipped": skipped},
+        status_code=201,
+    )

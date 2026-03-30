@@ -1,4 +1,4 @@
-"""Seed 8 domains and 42 categories into the database."""
+"""Seed 12 domains, categories, and domain-scoped companies into the database."""
 
 import asyncio
 
@@ -26,6 +26,13 @@ DOMAINS: list[dict] = [
             "Refurbished Sold as New",
             "Dark Patterns",
         ],
+        "companies": [
+            "Amazon India", "Flipkart", "Meesho", "Myntra", "Ajio", "Nykaa", "Tata CLiQ",
+            "Blinkit", "Zepto", "Swiggy Instamart", "JioMart", "Snapdeal", "FirstCry", "Croma",
+            "Reliance Digital", "Reliance Smart", "BigBasket", "NNNOW", "Shopsy", "Purplle",
+            "Lenskart", "Bewakoof", "Pepperfry", "Shopclues", "Ferns N Petals", "Hopscotch",
+            "Decathlon", "Shoppers Stop",
+        ],
     },
     {
         "name": "Banking & Financial Services",
@@ -43,6 +50,15 @@ DOMAINS: list[dict] = [
             "BNPL Hidden Charges",
             "KYC Fraud",
             "Forex / Crypto Scam",
+        ],
+        "companies": [
+            "State Bank of India (SBI)", "HDFC Bank", "ICICI Bank", "Axis Bank",
+            "Kotak Mahindra Bank", "Punjab National Bank (PNB)", "Bank of Baroda",
+            "Union Bank of India", "Canara Bank", "Bank of India", "IndusInd Bank",
+            "Yes Bank", "IDFC First Bank", "Paytm (One97 Communications)", "PhonePe",
+            "Google Pay (GPay)", "Cred", "MobiKwik", "Amazon Pay", "BHIM / NPCI",
+            "Bajaj Finserv", "Navi", "Lazypay", "Simpl", "Slice", "Kissht", "Dhani",
+            "Muthoot Finance", "Manappuram Finance", "SBI Card", "LIC of India",
         ],
     },
     {
@@ -62,6 +78,13 @@ DOMAINS: list[dict] = [
             "Title Dispute / Encroachment",
             "Undisclosed Property Defects",
         ],
+        "companies": [
+            "Lodha Group (Macrotech Developers)", "Godrej Properties", "DLF",
+            "Prestige Estates", "Sobha Limited", "Supertech", "Amrapali Group",
+            "Jaypee Infratech", "Unitech Group", "Puravankara", "Brigade Enterprises",
+            "Omaxe", "NoBroker", "MagicBricks", "99acres", "Housing.com", "Square Yards",
+            "Makaan", "Nestaway", "Stanza Living", "ZoloStays",
+        ],
     },
     {
         "name": "Government Services",
@@ -79,6 +102,20 @@ DOMAINS: list[dict] = [
             "Traffic Challan Scam",
             "RTO / Driving License Extortion",
             "Income Tax Refund Scam",
+        ],
+        "companies": [
+            "Indian Railways (IRCTC)", "India Post",
+            "Employees' Provident Fund Organisation (EPFO)",
+            "Income Tax Department",
+            "Unique Identification Authority of India (UIDAI / Aadhaar)",
+            "Passport Seva", "Regional Transport Office (RTO)",
+            "Municipal Corporation of Greater Mumbai (MCGM / BMC)",
+            "Municipal Corporation of Delhi (MCD)",
+            "Bruhat Bengaluru Mahanagara Palike (BBMP)",
+            "Greater Chennai Corporation (GCC)", "State Traffic Police", "BSNL", "MTNL",
+            "State Electricity Boards", "Public Works Department (PWD)",
+            "Civil Supplies / Ration Distribution",
+            "National Highway Authority of India (NHAI / FASTag)",
         ],
     },
     {
@@ -98,6 +135,14 @@ DOMAINS: list[dict] = [
             "Refusal to Treat in Emergency",
             "Miracle Cure / Magic Remedy Scam",
         ],
+        "companies": [
+            "Apollo Hospitals", "Fortis Healthcare", "Max Healthcare", "Manipal Hospitals",
+            "Narayana Health", "Medanta", "Columbia Asia (Now Manipal)", "Care Hospitals",
+            "Practo", "PharmEasy", "1mg (Tata 1mg)", "Netmeds", "Apollo Pharmacy",
+            "Truemeds", "Dr. Lal PathLabs", "SRL Diagnostics", "Metropolis Healthcare",
+            "Thyrocare", "Star Health Insurance", "HDFC ERGO", "ICICI Lombard",
+            "Reliance General Insurance", "Niva Bupa Health Insurance", "Aditya Birla Capital",
+        ],
     },
     {
         "name": "Education & Recruitment",
@@ -115,6 +160,13 @@ DOMAINS: list[dict] = [
             "Withheld Original Certificates",
             "Study Abroad Consulting Fraud",
             "Data Selling by Institutes",
+        ],
+        "companies": [
+            "Byju's", "Unacademy", "Physics Wallah", "Vedantu", "UpGrad", "Simplilearn",
+            "Udemy", "Coursera", "Allen Career Institute", "Aakash Educational Services",
+            "FIITJEE", "Resonance", "Great Learning", "Scaler Academy", "Masai School",
+            "Cuemath", "WhiteHat Jr", "LinkedIn (Recruitment Scams)", "Naukri.com", "Indeed",
+            "Foundit (Monster)", "Shine.com", "Apna", "Internshala",
         ],
     },
     {
@@ -134,6 +186,12 @@ DOMAINS: list[dict] = [
             "Dating / Matrimonial App Scam",
             "Social Media Account Hacking",
         ],
+        "companies": [
+            "Reliance Jio", "Bharti Airtel", "Vodafone Idea (Vi)", "ACT Fibernet",
+            "Hathway", "Excitel", "You Broadband", "Tata Play Fiber", "JioFiber",
+            "Airtel Xstream Fiber", "Netflix", "Amazon Prime Video", "Disney+ Hotstar",
+            "SonyLIV", "Zee5", "Spotify", "YouTube Premium",
+        ],
     },
     {
         "name": "Consumer Goods & Services",
@@ -152,6 +210,12 @@ DOMAINS: list[dict] = [
             "Appliance Repair Scam",
             "Cab Surge / Ride-Hailing Extortion",
         ],
+        "companies": [
+            "Samsung India", "LG Electronics", "Sony India", "Whirlpool", "Apple India",
+            "Xiaomi", "OnePlus", "Boat", "Noise", "Realme", "Vivo", "Oppo", "Dell",
+            "HP (Hewlett-Packard)", "Lenovo", "Acer", "Asus", "Urban Company", "JustDial",
+            "Zomato", "Swiggy", "BookMyShow", "Paytm Insider", "Ticketmaster",
+        ],
     },
     {
         "name": "Travel & Logistics",
@@ -166,6 +230,13 @@ DOMAINS: list[dict] = [
             "Fake Travel Agent / Holiday Package Scam",
             "Overcharging by Airport / Railway Station Vendors",
             "Toll Plaza / Border Crossing Extortion",
+        ],
+        "companies": [
+            "IndiGo", "Air India", "SpiceJet", "Vistara", "Akasa Air", "Air India Express",
+            "MakeMyTrip", "Goibibo", "Yatra", "Cleartrip", "EaseMyTrip", "Ixigo", "Oyo Rooms",
+            "Agoda", "Booking.com", "Airbnb", "IRCTC", "RedBus", "AbhiBus", "Delhivery",
+            "Blue Dart", "DTDC", "Ecom Express", "XpressBees", "Shadowfax",
+            "India Post (Speed Post)",
         ],
     },
     {
@@ -183,6 +254,14 @@ DOMAINS: list[dict] = [
             "Selling Stolen / Accidental Vehicles",
             "Fastag Deduction Errors / Double Charges",
         ],
+        "companies": [
+            "Maruti Suzuki", "Hyundai Motor India", "Tata Motors", "Mahindra & Mahindra",
+            "Honda Cars India", "Toyota Kirloskar Motor", "Kia India", "Ola Electric",
+            "Ather Energy", "Royal Enfield", "Hero MotoCorp",
+            "Honda Motorcycle and Scooter India",
+            "TVS Motor Company", "Bajaj Auto", "Skoda India", "Volkswagen India", "Uber",
+            "Ola Cabs", "Rapido", "Porter", "Zoomcar", "Revv", "BluSmart", "InDrive",
+        ],
     },
     {
         "name": "Utilities & Energy",
@@ -197,6 +276,13 @@ DOMAINS: list[dict] = [
             "Solar Panel Installation Scam",
             "New Connection / Deposit Harassment",
             "Garbage Collection / Civic Services Neglect",
+        ],
+        "companies": [
+            "Adani Electricity", "Tata Power", "BESCOM (Bangalore)",
+            "MSEDCL / Mahavitaran (Maharashtra)",
+            "BSES Rajdhani (Delhi)", "BSES Yamuna (Delhi)", "TANGEDCO (Tamil Nadu)",
+            "UPPCL (Uttar Pradesh)", "TSSPDCL (Telangana)", "Indane Gas", "Bharat Gas",
+            "HP Gas", "Mahanagar Gas (MGL)", "Indraprastha Gas (IGL)",
         ],
     },
     {
@@ -214,82 +300,13 @@ DOMAINS: list[dict] = [
             "Maternity Benefit Denial",
             "Freelancer / Gig Worker Unpaid Invoices",
         ],
+        "companies": [
+            "Tata Consultancy Services (TCS)", "Infosys", "Wipro", "HCLTech", "Tech Mahindra",
+            "Cognizant", "Accenture", "Capgemini", "Teleperformance", "Concentrix", "Genpact",
+            "IBM India", "L&T Technology Services", "Tech Support BPOs (Generic)",
+            "Deloitte India", "EY India", "KPMG India", "PwC India",
+        ],
     },
-]
-
-COMPANIES = [
-    "Amazon India", "Flipkart", "Meesho", "Myntra", "Ajio", "Nykaa", "Tata CLiQ",
-    "Blinkit", "Zepto", "Swiggy Instamart", "JioMart", "Snapdeal", "FirstCry", "Croma",
-    "Reliance Digital", "Reliance Smart", "BigBasket", "NNNOW", "Shopsy", "Purplle", 
-    "Lenskart", "Bewakoof", "Pepperfry", "Shopclues", "Ferns N Petals", "Hopscotch", 
-    "Decathlon", "Shoppers Stop",
-    
-    "State Bank of India (SBI)", "HDFC Bank", "ICICI Bank", "Axis Bank", 
-    "Kotak Mahindra Bank", "Punjab National Bank (PNB)", "Bank of Baroda", 
-    "Union Bank of India", "Canara Bank", "Bank of India", "IndusInd Bank", 
-    "Yes Bank", "IDFC First Bank", "Paytm (One97 Communications)", "PhonePe",
-    "Google Pay (GPay)", "Cred", "MobiKwik", "Amazon Pay", "BHIM / NPCI", 
-    "Bajaj Finserv", "Navi", "Lazypay", "Simpl", "Slice", "Kissht", "Dhani", 
-    "Muthoot Finance", "Manappuram Finance", "SBI Card", "LIC of India",
-    
-    "Lodha Group (Macrotech Developers)", "Godrej Properties", "DLF", 
-    "Prestige Estates", "Sobha Limited", "Supertech", "Amrapali Group", 
-    "Jaypee Infratech", "Unitech Group", "Puravankara", "Brigade Enterprises", 
-    "Omaxe", "NoBroker", "MagicBricks", "99acres", "Housing.com", "Square Yards", 
-    "Makaan", "Nestaway", "Stanza Living", "ZoloStays",
-
-    "Indian Railways (IRCTC)", "India Post", "Employees' Provident Fund Organisation (EPFO)", 
-    "Income Tax Department", "Unique Identification Authority of India (UIDAI / Aadhaar)", 
-    "Passport Seva", "Regional Transport Office (RTO)", 
-    "Municipal Corporation of Greater Mumbai (MCGM / BMC)", 
-    "Municipal Corporation of Delhi (MCD)", "Bruhat Bengaluru Mahanagara Palike (BBMP)", 
-    "Greater Chennai Corporation (GCC)", "State Traffic Police", "BSNL", "MTNL", 
-    "State Electricity Boards", "Public Works Department (PWD)", 
-    "Civil Supplies / Ration Distribution", "National Highway Authority of India (NHAI / FASTag)",
-
-    "Apollo Hospitals", "Fortis Healthcare", "Max Healthcare", "Manipal Hospitals", 
-    "Narayana Health", "Medanta", "Columbia Asia (Now Manipal)", "Care Hospitals", 
-    "Practo", "PharmEasy", "1mg (Tata 1mg)", "Netmeds", "Apollo Pharmacy", 
-    "Truemeds", "Dr. Lal PathLabs", "SRL Diagnostics", "Metropolis Healthcare", 
-    "Thyrocare", "Star Health Insurance", "HDFC ERGO", "ICICI Lombard", 
-    "Reliance General Insurance", "Niva Bupa Health Insurance", "Aditya Birla Capital",
-
-    "Byju's", "Unacademy", "Physics Wallah", "Vedantu", "UpGrad", "Simplilearn", 
-    "Udemy", "Coursera", "Allen Career Institute", "Aakash Educational Services", 
-    "FIITJEE", "Resonance", "Great Learning", "Scaler Academy", "Masai School", 
-    "Cuemath", "WhiteHat Jr", "LinkedIn (Recruitment Scams)", "Naukri.com", "Indeed", 
-    "Foundit (Monster)", "Shine.com", "Apna", "Internshala",
-
-    "Reliance Jio", "Bharti Airtel", "Vodafone Idea (Vi)", "ACT Fibernet", 
-    "Hathway", "Excitel", "You Broadband", "Tata Play Fiber", "JioFiber", 
-    "Airtel Xstream Fiber", "Netflix", "Amazon Prime Video", "Disney+ Hotstar", 
-    "SonyLIV", "Zee5", "Spotify", "YouTube Premium",
-
-    "Samsung India", "LG Electronics", "Sony India", "Whirlpool", "Apple India", 
-    "Xiaomi", "OnePlus", "Boat", "Noise", "Realme", "Vivo", "Oppo", "Dell", 
-    "HP (Hewlett-Packard)", "Lenovo", "Acer", "Asus", "Urban Company", "JustDial", 
-    "Zomato", "Swiggy", "BookMyShow", "Paytm Insider", "Ticketmaster",
-
-    "IndiGo", "Air India", "SpiceJet", "Vistara", "Akasa Air", "Air India Express", 
-    "MakeMyTrip", "Goibibo", "Yatra", "Cleartrip", "EaseMyTrip", "Ixigo", "Oyo Rooms", 
-    "Agoda", "Booking.com", "Airbnb", "IRCTC", "RedBus", "AbhiBus", "Delhivery", 
-    "Blue Dart", "DTDC", "Ecom Express", "XpressBees", "Shadowfax", "India Post (Speed Post)",
-
-    "Maruti Suzuki", "Hyundai Motor India", "Tata Motors", "Mahindra & Mahindra", 
-    "Honda Cars India", "Toyota Kirloskar Motor", "Kia India", "Ola Electric", 
-    "Ather Energy", "Royal Enfield", "Hero MotoCorp", "Honda Motorcycle and Scooter India", 
-    "TVS Motor Company", "Bajaj Auto", "Skoda India", "Volkswagen India", "Uber", 
-    "Ola Cabs", "Rapido", "Porter", "Zoomcar", "Revv", "BluSmart", "InDrive",
-
-    "Adani Electricity", "Tata Power", "BESCOM (Bangalore)", "MSEDCL / Mahavitaran (Maharashtra)", 
-    "BSES Rajdhani (Delhi)", "BSES Yamuna (Delhi)", "TANGEDCO (Tamil Nadu)", 
-    "UPPCL (Uttar Pradesh)", "TSSPDCL (Telangana)", "Indane Gas", "Bharat Gas", 
-    "HP Gas", "Mahanagar Gas (MGL)", "Indraprastha Gas (IGL)",
-
-    "Tata Consultancy Services (TCS)", "Infosys", "Wipro", "HCLTech", "Tech Mahindra", 
-    "Cognizant", "Accenture", "Capgemini", "Teleperformance", "Concentrix", "Genpact", 
-    "IBM India", "L&T Technology Services", "Tech Support BPOs (Generic)", 
-    "Deloitte India", "EY India", "KPMG India", "PwC India"
 ]
 
 
@@ -332,17 +349,21 @@ async def seed():
                 else:
                     print(f"      = Category exists: {cat_name}")
 
-        for company_name in COMPANIES:
-            result = await session.execute(
-                select(Company).where(Company.name.ilike(company_name))
-            )
-            company = result.scalar_one_or_none()
-            if not company:
-                company = Company(name=company_name)
-                session.add(company)
-                print(f"  + Company: {company_name}")
-            else:
-                print(f"  = Company exists: {company_name}")
+            for company_name in domain_data.get("companies", []):
+                result = await session.execute(
+                    select(Company).where(Company.name.ilike(company_name))
+                )
+                company = result.scalar_one_or_none()
+                if company:
+                    if company.domain_id != domain.id:
+                        company.domain_id = domain.id
+                        print(f"      ~ Company updated: {company_name} → {domain.name}")
+                    else:
+                        print(f"      = Company exists: {company_name}")
+                else:
+                    company = Company(name=company_name, domain_id=domain.id)
+                    session.add(company)
+                    print(f"      + Company: {company_name}")
 
         await session.commit()
         print("\nSeeding complete.")
