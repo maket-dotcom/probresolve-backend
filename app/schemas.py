@@ -113,6 +113,25 @@ class CompanyEmbed(BaseModel):
     name: str
 
 
+class CategoryScore(BaseModel):
+    """Per-category stats for a single company on the scoreboard."""
+    model_config = ConfigDict(from_attributes=True)
+    id: uuid.UUID | None          # None → "Uncategorized" (Problem.category_id is nullable)
+    name: str
+    complaint_count: int
+    total_amount_lost: int
+
+
+class CompanyScoreEntry(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    name: str
+    domain: DomainEmbed | None = None
+    complaint_count: int
+    total_amount_lost: int  # COALESCE(SUM(amount_lost), 0) — 0 when none filed
+
+
 class EscalationLink(BaseModel):
     name: str
     url: str

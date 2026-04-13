@@ -9,7 +9,9 @@ from app.escalation import ESCALATION_MAP, FALLBACK_ESCALATION
 from app.models import Company
 from app.schemas import (
     CategoryEmbed,
+    CategoryScore,
     CompanyEmbed,
+    CompanyScoreEntry,
     DomainEmbed,
     EscalationLink,
     EvidenceOut,
@@ -160,12 +162,49 @@ async def report_problem_api(
 async def search_problems(
     q: str = "",
     page: int = Query(1, ge=1),
+    domain_id: uuid.UUID | None = None,
     db: AsyncSession = Depends(get_db),
 ):
     if not q.strip():
         return []
-    problems = await problem_service.search_problems(db, q.strip(), page=page)
+    problems = await problem_service.search_problems(db, q.strip(), page=page, domain_id=domain_id)
     return await _build_problem_list(problems, db)
+
+
+@router.get("/scoreboard", response_model=list[CompanyScoreEntry])
+async def get_scoreboard(
+    domain_id: uuid.UUID | None = None,
+    sort: str = Query("complaints", pattern="^(complaints|amount)$"),
+    db: AsyncSession = Depends(get_db),
+):
+    rows = await problem_service.get_scoreboard(db, domain_id=domain_id, sort=sort)
+    return [
+        CompanyScoreEntry(
+            id=r["id"],
+            name=r["name"],
+            domain=DomainEmbed.model_validate(r["domain"]) if r["domain"] else None,
+            complaint_count=r["complaint_count"],
+            total_amount_lost=r["total_amount_lost"],
+        )
+        for r in rows
+    ]
+
+
+@router.get("/scoreboard/{company_id}/categories", response_model=list[CategoryScore])
+async def get_company_categories(
+    company_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+):
+    rows = await problem_service.get_company_category_breakdown(db, company_id)
+    return [
+        CategoryScore(
+            id=r["id"],
+            name=r["name"],
+            complaint_count=r["complaint_count"],
+            total_amount_lost=r["total_amount_lost"],
+        )
+        for r in rows
+    ]
 
 
 @router.get("/companies", response_model=list[CompanyEmbed])

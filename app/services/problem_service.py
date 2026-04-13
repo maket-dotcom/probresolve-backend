@@ -74,6 +74,7 @@ async def search_problems(
     db: AsyncSession,
     query: str,
     page: int = 1,
+    domain_id: uuid.UUID | None = None,
 ) -> list[Problem]:
     offset = (page - 1) * PAGE_SIZE
     pattern = f"%{query}%"
@@ -88,8 +89,65 @@ async def search_problems(
         .offset(offset)
         .limit(PAGE_SIZE)
     )
+    if domain_id is not None:
+        stmt = stmt.where(Problem.domain_id == domain_id)
     result = await db.execute(stmt)
     return list(result.scalars().all())
+
+
+async def get_scoreboard(
+    db: AsyncSession,
+    domain_id: uuid.UUID | None = None,
+    sort: str = "complaints",
+) -> list[dict]:
+    """Return companies ranked by complaint count or total ₹ lost.
+
+    Filters on Problem.domain_id (not Company.domain_id) so the results
+    answer "companies with complaints IN this domain".
+    Hidden problems are excluded.
+    """
+    from app.models import Company, Domain
+
+    order_col = (
+        func.coalesce(func.sum(Problem.amount_lost), 0).desc()
+        if sort == "amount"
+        else func.count(Problem.id).desc()
+    )
+
+    stmt = (
+        select(
+            Company.id,
+            Company.name,
+            Company.domain_id,
+            func.count(Problem.id).label("complaint_count"),
+            func.coalesce(func.sum(Problem.amount_lost), 0).label("total_amount_lost"),
+        )
+        .join(Problem, Problem.company_id == Company.id)
+        .where(Problem.is_hidden == False)  # noqa: E712
+        .group_by(Company.id, Company.name, Company.domain_id)
+        .having(func.count(Problem.id) > 0)
+        .order_by(order_col)
+    )
+    if domain_id is not None:
+        stmt = stmt.where(Problem.domain_id == domain_id)
+
+    result = await db.execute(stmt)
+    rows = result.all()
+
+    # Fetch all domains in a single query (few rows) and join in Python
+    domain_result = await db.execute(select(Domain))
+    domain_map = {d.id: d for d in domain_result.scalars().all()}
+
+    return [
+        {
+            "id": row.id,
+            "name": row.name,
+            "domain": domain_map.get(row.domain_id),
+            "complaint_count": row.complaint_count,
+            "total_amount_lost": int(row.total_amount_lost),
+        }
+        for row in rows
+    ]
 
 
 async def get_report_counts(
@@ -104,6 +162,46 @@ async def get_report_counts(
         .group_by(Report.problem_id)
     )
     return dict(result.all())
+
+
+async def get_company_category_breakdown(
+    db: AsyncSession,
+    company_id: uuid.UUID,
+) -> list[dict]:
+    """Return complaint breakdown by category for a single company.
+
+    Groups by Category, sorted by complaint_count descending.
+    Problems with no category are grouped under "Uncategorized" (id=None).
+    Hidden problems are excluded.
+    """
+    from app.models import Category
+
+    stmt = (
+        select(
+            Category.id,
+            Category.name,
+            func.count(Problem.id).label("complaint_count"),
+            func.coalesce(func.sum(Problem.amount_lost), 0).label("total_amount_lost"),
+        )
+        .select_from(Problem)
+        .outerjoin(Category, Problem.category_id == Category.id)
+        .where(
+            Problem.company_id == company_id,
+            Problem.is_hidden == False,  # noqa: E712
+        )
+        .group_by(Category.id, Category.name)
+        .order_by(func.count(Problem.id).desc())
+    )
+    result = await db.execute(stmt)
+    return [
+        {
+            "id": row.id,                   # None when category_id was NULL
+            "name": row.name or "Uncategorized",
+            "complaint_count": row.complaint_count,
+            "total_amount_lost": int(row.total_amount_lost),
+        }
+        for row in result.all()
+    ]
 
 
 async def get_all_problems_admin(db: AsyncSession, q: str | None = None) -> list[Problem]:

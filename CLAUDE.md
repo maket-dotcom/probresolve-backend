@@ -27,7 +27,7 @@ pytest                                 # Run tests
 ## Key facts
 - POST /api/problems accepts multipart form, returns `{"id", "slug"}` 201
 - `amount_lost` stored in rupees (₹)
-- Admin auth: `?key=ADMIN_KEY` query param
+- Admin auth: `` query param
 - supabase-py storage is synchronous — always use `asyncio.to_thread()`
 - DATABASE_URL username format for pooler: `postgres.PROJECTREF`
 

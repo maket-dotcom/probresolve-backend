@@ -68,7 +68,7 @@ async def create_problem(
         result = await db.execute(select(Company).where(Company.name.ilike(name_clean)))
         company = result.scalar_one_or_none()
         if not company:
-            company = Company(name=name_clean)
+            company = Company(name=name_clean, domain_id=domain_id)
             db.add(company)
             await db.flush()  # to get ID
         company_id = company.id

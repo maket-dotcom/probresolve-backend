@@ -1,16 +1,40 @@
+# Environment files (real secrets — never commit these)
 .env
+.env.production
+.env.dev
+# NOTE: .env.example is intentionally NOT ignored — commit it as a safe template
+
+# Python virtual environment
 .venv/
+
+# Python bytecode & caches
 __pycache__/
 *.pyc
-.pytest_cache/
-sitemap.xml
+*.pyo
+*.pyd
 *.egg-info/
 dist/
+build/
+*.egg
 
-# Debug & Temporary files
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# Type checking
+pyrightconfig.json
+
+# Secrets / Generated files
+sitemap.xml
+
+# Debug & temporary files
 test_submit.py
+backfill_company_domains.py
 *.log
+
+# IDE / editor configs
 .idea/
 .vscode/
 *.sqlite3
-
