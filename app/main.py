@@ -9,6 +9,7 @@ from slowapi.errors import RateLimitExceeded
 from app.config import settings
 from app.limiter import limiter
 from app.routes import admin, api_routes, pages, problems
+from app.utils import get_client_ip
 
 app = FastAPI(
     title="ProbResolve",
@@ -18,6 +19,14 @@ app = FastAPI(
 
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    response = await call_next(request)
+    ip = get_client_ip(request)
+    print(f"{request.method} {request.url.path} ip={ip} status={response.status_code}")
+    return response
 
 app.add_middleware(
     CORSMiddleware,
