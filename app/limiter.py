@@ -1,4 +1,11 @@
+from fastapi import Request
 from slowapi import Limiter
-from slowapi.util import get_remote_address
 
-limiter = Limiter(key_func=get_remote_address)
+from app.utils import get_client_ip
+
+
+def _get_client_ip(request: Request) -> str:
+    return get_client_ip(request)
+
+
+limiter = Limiter(key_func=_get_client_ip)

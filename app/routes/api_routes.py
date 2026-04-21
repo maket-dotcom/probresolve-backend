@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.deps import get_db, get_current_user
+from app.utils import get_client_ip
 from app.escalation import ESCALATION_MAP, FALLBACK_ESCALATION
 from app.models import Company, Problem
 from app.schemas import (
@@ -99,10 +100,7 @@ async def get_problem(
     if problem is None:
         raise HTTPException(status_code=404, detail="Problem not found")
 
-    # Read forwarded IP + UA from Next.js server component headers
-    ip = request.headers.get("X-Real-IP") or (
-        request.client.host if request.client else "unknown"
-    )
+    ip = get_client_ip(request)
     ua = request.headers.get("User-Agent", "")
     fingerprint = compute_fingerprint(ip, ua)
 
@@ -150,9 +148,7 @@ async def upvote_problem(
     problem_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
 ):
-    ip = request.headers.get("X-Real-IP") or (
-        request.client.host if request.client else "unknown"
-    )
+    ip = get_client_ip(request)
     ua = request.headers.get("User-Agent", "")
     fingerprint = compute_fingerprint(ip, ua)
     count, already_voted = await upvote(db, problem_id, fingerprint)
@@ -166,9 +162,7 @@ async def report_problem_api(
     reason: str = Form(...),
     db: AsyncSession = Depends(get_db),
 ):
-    ip = request.headers.get("X-Real-IP") or (
-        request.client.host if request.client else "unknown"
-    )
+    ip = get_client_ip(request)
     ua = request.headers.get("User-Agent", "")
     fingerprint = compute_fingerprint(ip, ua)
     count, _ = await report_problem(db, problem_id, fingerprint, reason)
